@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chromium's Role in 2D Materials: An Interactive Exploration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Visualization & Content Choices:
+        - Hero: Title, concise intro. Goal: Inform. Method: Text.
+        - 2D Challenge: Explanation of vdW solids, weak interlayer coupling. Goal: Inform. Method: Text.
+        - Cr Solution: Introduce Cr's "glue" concept. Goal: Inform. Method: Text.
+        - Mechanical: Text + Bar Chart (Shear Modulus, Interlayer Binding Energy for Pristine vs. Cr-Intercalated Sb₂Te₃). Goal: Compare. Interaction: Chart.js rendering of mock data reflecting described improvements. Justification: Clear visual of mechanical enhancement. Library: Chart.js.
+        - Electronic/Magnetic: Text + HTML/CSS conceptual diagram (impurity states/spin splitting). Goal: Inform/Organize. Interaction: Static visual. Justification: Simple visual aid for complex electronic changes. Method: HTML/CSS.
+        - Thermoelectric: Text + Grouped Bar Chart (illustrative changes in Seebeck, Conductivity, Thermal Conductivity, zT). Goal: Compare/Change. Interaction: Chart.js rendering of mock data. Justification: Visualizes impact on multiple TE parameters. Library: Chart.js.
+        - Cr Dynamics: Text + HTML/CSS conceptual diagram (migration path in vdW gap). Goal: Inform/Organize. Interaction: Static visual. Justification: Illustrates Cr movement. Method: HTML/CSS.
+        - Computational Toolkit: Text + Icon-like cards for DFT, MLFF, MD, NEB. Goal: Organize/Inform. Interaction: Static. Justification: Quick overview of research methods. Method: HTML/CSS.
+        - Outlook: Text. Goal: Inform. Method: Text.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        .nav-link { transition: color 0.3s ease; }
+        .nav-link:hover { color: #0284c7; } /* sky-600 */
+        .section-title::after { content: ''; display: block; width: 60px; height: 3px; background-color: #0ea5e9; /* sky-500 */ margin-top: 8px; }
+        .content-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .content-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
+        h1, h2, h3 { font-weight: 600; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <header class="bg-slate-100/80 backdrop-blur-md shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-semibold text-xl text-sky-600">Cr in 2D Materials</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#introduction" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Introduction</a>
+                        <a href="#challenge" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">The Challenge</a>
+                        <a href="#solution" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Cr Solution</a>
+                        <a href="#mechanical" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Mechanical</a>
+                        <a href="#electronic" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Electronic</a>
+                        <a href="#thermoelectric" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Thermoelectric</a>
+                        <a href="#dynamics" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Dynamics</a>
+                        <a href="#methods" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Methods</a>
+                        <a href="#outlook" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">Outlook</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-slate-500 hover:text-sky-600 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-sky-500">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <svg class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#introduction" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-200">Introduction</a>
+                <a href="#challenge" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-200">The Challenge</a>
+                <a href="#solution" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-200">Cr Solution</a>
+                <a href="#mechanical" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-200">Mechanical</a>
+                <a href="#electronic" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-200">Electronic</a>
+                <a href="#thermoelectric" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-200">Thermoelectric</a>
+                <a href="#dynamics" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-200">Dynamics</a>
+                <a href="#methods" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-200">Methods</a>
+                <a href="#outlook" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-200">Outlook</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <section id="introduction" class="py-12 md:py-16">
+            <div class="max-w-3xl mx-auto text-center">
+                <h1 class="text-4xl md:text-5xl font-bold text-sky-700 mb-6">The Chromium "Glue" in 2D Materials</h1>
+                <p class="text-lg text-slate-700 mb-4">
+                    Two-dimensional (2D) materials are revolutionizing materials science, offering pathways to next-generation electronics. This exploration delves into how Chromium (Cr) intercalation can act as a "molecular glue," enhancing the properties and stability of layered van der Waals (vdW) solids like Sb₂Te₃.
+                </p>
+                <p class="text-md text-slate-600">
+                    This interactive summary highlights key findings from research on Cr's role, focusing on its impact on mechanical, electronic, magnetic, and thermoelectric characteristics.
+                </p>
+            </div>
+        </section>
+
+        <section id="challenge" class="py-12 md:py-16 bg-white rounded-xl shadow-lg my-8">
+            <div class="max-w-4xl mx-auto px-6">
+                <h2 class="section-title text-3xl font-semibold text-slate-800 mb-8">The 2D Material Challenge: Interlayer Weakness</h2>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <p class="text-slate-700 mb-4 leading-relaxed">
+                            Layered van der Waals (vdW) solids are a fascinating class of quantum materials. They feature strong in-plane covalent bonds but are held together by weak out-of-plane vdW interactions. This structural anisotropy allows for easy exfoliation (like peeling layers off graphite to get graphene) and interface engineering.
+                        </p>
+                        <p class="text-slate-700 mb-4 leading-relaxed">
+                            However, this same weak interlayer coupling can be a drawback. It can lead to limited mechanical stability under stress and can affect the material's overall performance in devices. Enhancing these interlayer interactions is crucial for unlocking the full potential of 2D materials.
+                        </p>
+                         <p class="text-slate-700 leading-relaxed">
+                            Techniques like strain engineering and intercalation (inserting atoms/molecules between layers) are explored to tune their properties, but a deeper understanding of how specific intercalants work is needed.
+                        </p>
+                    </div>
+                    <div class="flex justify-center items-center p-4">
+                        <div class="w-full max-w-xs aspect-square bg-slate-100 rounded-lg p-4 shadow">
+                            <p class="text-center font-semibold text-slate-700 mb-2">Van der Waals Layers</p>
+                            <div class="space-y-2">
+                                <div class="h-8 bg-sky-300 rounded flex items-center justify-center text-sm text-sky-800">Layer 1 (Strong In-Plane)</div>
+                                <div class="text-center text-xs text-slate-500">Weak vdW Gap</div>
+                                <div class="h-8 bg-sky-300 rounded flex items-center justify-center text-sm text-sky-800">Layer 2 (Strong In-Plane)</div>
+                                <div class="text-center text-xs text-slate-500">Weak vdW Gap</div>
+                                <div class="h-8 bg-sky-300 rounded flex items-center justify-center text-sm text-sky-800">Layer 3 (Strong In-Plane)</div>
+                            </div>
+                            <p class="text-center text-xs text-slate-500 mt-3">Illustrative representation of layered structure.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="solution" class="py-12 md:py-16">
+            <div class="max-w-4xl mx-auto px-6">
+                <h2 class="section-title text-3xl font-semibold text-slate-800 mb-8">Chromium Intercalation: A "Molecular Glue"</h2>
+                <p class="text-slate-700 mb-4 leading-relaxed">
+                    Among various strategies, intercalation with transition metals like Chromium (Cr) shows significant promise. Cr is known for its strong adhesion properties in semiconductor manufacturing and can act as an effective interlayer "glue" in 2D materials.
+                </p>
+                <p class="text-slate-700 mb-4 leading-relaxed">
+                    By inserting Cr atoms into the vdW gaps of materials like Antimony Telluride (Sb₂Te₃), a well-known thermoelectric material, researchers aim to:
+                </p>
+                <ul class="list-disc list-inside text-slate-700 space-y-2 mb-6 pl-4">
+                    <li>Enhance interlayer coupling and mechanical stability.</li>
+                    <li>Modulate electronic and magnetic properties.</li>
+                    <li>Optimize thermoelectric performance.</li>
+                </ul>
+                <p class="text-slate-700 leading-relaxed">
+                    Understanding precisely how Cr atoms position themselves, interact with the host layers, and affect various material properties is key to designing improved 2D material-based devices.
+                </p>
+            </div>
+        </section>
+
+        <section id="mechanical" class="py-12 md:py-16 bg-white rounded-xl shadow-lg my-8">
+            <div class="max-w-4xl mx-auto px-6">
+                <h2 class="section-title text-3xl font-semibold text-slate-800 mb-8">Mechanical Reinforcement: The "Glue" Effect</h2>
+                <p class="text-slate-700 mb-6 leading-relaxed">
+                    Computational studies show that Cr atoms preferentially settle in the interstitial sites within the vdW gaps of Sb₂Te₃. This positioning allows them to act as pillars, strengthening the connections between layers. The result is a significant improvement in mechanical robustness.
+                </p>
+                <div class="chart-container mx-auto">
+                    <canvas id="mechanicalPropertiesChart"></canvas>
+                </div>
+                <p class="text-sm text-slate-600 mt-4 text-center leading-relaxed">
+                    The chart above illustratively shows how Cr intercalation can enhance key mechanical properties like shear modulus (resistance to twisting/sliding) and interlayer binding energy (how strongly layers stick together) in Sb₂Te₃. This increased toughness is vital for flexible electronics and devices enduring physical stress.
+                </p>
+            </div>
+        </section>
+
+        <section id="electronic" class="py-12 md:py-16">
+            <div class="max-w-4xl mx-auto px-6">
+                <h2 class="section-title text-3xl font-semibold text-slate-800 mb-8">Electronic & Magnetic Modulation</h2>
+                <div class="grid md:grid-cols-2 gap-8 items-start">
+                    <div>
+                        <p class="text-slate-700 mb-4 leading-relaxed">
+                            Cr intercalation doesn't just make the material tougher; it also profoundly alters its electronic and magnetic landscape. The d-orbitals of Cr atoms interact (hybridize) with the orbitals of Sb and Te atoms.
+                        </p>
+                        <p class="text-slate-700 mb-4 leading-relaxed">
+                            This interaction can:
+                        </p>
+                        <ul class="list-disc list-inside text-slate-700 space-y-2 mb-4 pl-4">
+                            <li>Introduce new electronic states near the Fermi level (the energy threshold for electron conduction).</li>
+                            <li>Alter the material's band gap, which is crucial for its optical and electronic behavior.</li>
+                            <li>Induce magnetic properties, such as ferromagnetism, in an otherwise non-magnetic material.</li>
+                        </ul>
+                        <p class="text-slate-700 leading-relaxed">
+                            This ability to simultaneously tune mechanical, electronic, and magnetic properties makes Cr-intercalated Sb₂Te₃ a candidate for multifunctional applications like spintronic thermoelectrics.
+                        </p>
+                    </div>
+                    <div class="flex flex-col items-center p-4 bg-slate-100 rounded-lg shadow">
+                        <p class="font-semibold text-slate-700 mb-3 text-center">Conceptual Impact of Cr on Electronic Structure</p>
+                        <div class="w-full space-y-4">
+                            <div class="border border-dashed border-slate-400 p-3 rounded">
+                                <p class="text-sm font-medium text-slate-600 text-center">Pristine Material (e.g., Sb₂Te₃)</p>
+                                <div class="h-16 bg-sky-200 rounded my-1 flex items-center justify-center text-xs text-sky-700">Valence Band</div>
+                                <div class="h-4 my-1 text-center text-xs text-slate-500">Band Gap</div>
+                                <div class="h-16 bg-sky-200 rounded my-1 flex items-center justify-center text-xs text-sky-700">Conduction Band</div>
+                            </div>
+                            <div class="text-center text-2xl text-sky-600">&darr; Cr Intercalation &darr;</div>
+                            <div class="border border-dashed border-slate-400 p-3 rounded">
+                                <p class="text-sm font-medium text-slate-600 text-center">Cr-Intercalated Material</p>
+                                <div class="h-16 bg-teal-200 rounded my-1 flex items-center justify-center text-xs text-teal-700 relative">
+                                    Valence Band
+                                    <div class="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-16 h-3 bg-red-300 rounded-sm text-xxs flex items-center justify-center text-red-700" style="font-size: 0.6rem;">Impurity States</div>
+                                </div>
+                                <div class="h-3 my-1 text-center text-xs text-slate-500">Modified Gap</div>
+                                <div class="h-16 bg-teal-200 rounded my-1 flex items-center justify-center text-xs text-teal-700">
+                                    Conduction Band (Potentially Spin-Split)
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-3 text-center">Illustrative: Cr can add states near Fermi level and induce spin splitting.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="thermoelectric" class="py-12 md:py-16 bg-white rounded-xl shadow-lg my-8">
+            <div class="max-w-4xl mx-auto px-6">
+                <h2 class="section-title text-3xl font-semibold text-slate-800 mb-8">Optimizing Thermoelectric Performance</h2>
+                <p class="text-slate-700 mb-4 leading-relaxed">
+                    Thermoelectric materials can convert heat directly into electricity and vice-versa. Their efficiency is measured by a figure of merit called *zT* = S²σT / (κₑ + κₗ). To get a high *zT*, one needs a high Seebeck coefficient (S) and electrical conductivity (σ), but low thermal conductivity (κ, sum of electronic κₑ and lattice κₗ contributions).
+                </p>
+                <p class="text-slate-700 mb-6 leading-relaxed">
+                    Cr intercalation influences these factors:
+                </p>
+                <ul class="list-disc list-inside text-slate-700 space-y-2 mb-6 pl-4">
+                    <li>It can significantly reduce lattice thermal conductivity (κₗ) by creating points that scatter heat-carrying phonons. This is a major benefit.</li>
+                    <li>Its impact on S and σ (and thus κₑ) needs careful balancing.</li>
+                </ul>
+                <div class="chart-container mx-auto">
+                    <canvas id="thermoelectricPropertiesChart"></canvas>
+                </div>
+                <p class="text-sm text-slate-600 mt-4 text-center leading-relaxed">
+                    The chart illustratively depicts how Cr intercalation might alter thermoelectric parameters, aiming for an overall increase in *zT*. The goal is to find an optimal Cr concentration that maximizes the power factor (S²σ) while minimizing thermal conductivity.
+                </p>
+            </div>
+        </section>
+
+        <section id="dynamics" class="py-12 md:py-16">
+             <div class="max-w-4xl mx-auto px-6">
+                <h2 class="section-title text-3xl font-semibold text-slate-800 mb-8">Chromium Dynamics & Long-Term Stability</h2>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <p class="text-slate-700 mb-4 leading-relaxed">
+                            For Cr to be an effective "glue," it's not enough for it to just stick; its long-term behavior matters. Researchers study how Cr atoms move (diffuse) within the Sb₂Te₃ lattice, especially at elevated temperatures.
+                        </p>
+                        <p class="text-slate-700 mb-4 leading-relaxed">
+                            Computational methods like Nudged Elastic Band (NEB) calculations help identify migration pathways and energy barriers for Cr atoms hopping between interstitial sites in the vdW gap.
+                        </p>
+                        <p class="text-slate-700 leading-relaxed">
+                            Understanding this mobility is crucial. If Cr atoms move too easily, they might cluster or segregate over time, potentially degrading the enhanced properties. A balance is needed: strong enough local bonding to provide the "glue" effect, but with controlled mobility to ensure stability.
+                        </p>
+                    </div>
+                    <div class="flex justify-center items-center p-4">
+                         <div class="w-full max-w-md bg-slate-100 rounded-lg p-6 shadow">
+                            <p class="text-center font-semibold text-slate-700 mb-3">Conceptual Cr Migration in vdW Gap</p>
+                            <div class="relative h-40 border-2 border-dashed border-slate-300 rounded-md p-2">
+                                <div class="absolute top-2 left-0 right-0 h-8 bg-sky-200 rounded-sm flex items-center justify-center text-xs text-sky-700">Upper Sb₂Te₃ Layer</div>
+                                <div class="absolute bottom-2 left-0 right-0 h-8 bg-sky-200 rounded-sm flex items-center justify-center text-xs text-sky-700">Lower Sb₂Te₃ Layer</div>
+
+                                <div class="absolute top-1/2 left-1/4 transform -translate-y-1/2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs shadow-md">Cr</div>
+                                <div class="absolute top-1/2 left-1/4 w-1/2 h-0.5 border-t-2 border-dashed border-red-400 transform -translate-y-px"></div>
+                                <div class="absolute top-1/2 left-3/4 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-red-300 rounded-full flex items-center justify-center text-white text-xs shadow-md">Cr</div>
+                                
+                                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-full -mt-1 text-center">
+                                    <span class="text-xs text-slate-600">Migration Path</span>
+                                    <svg class="w-5 h-5 text-red-500 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span class="text-xxs text-slate-500 block">Energy Barrier</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-3 text-center">Illustrative: Cr atom hopping between sites in the vdW gap.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="methods" class="py-12 md:py-16 bg-white rounded-xl shadow-lg my-8">
+            <div class="max-w-5xl mx-auto px-6">
+                <h2 class="section-title text-3xl font-semibold text-slate-800 mb-10">The Computational Toolkit</h2>
+                <p class="text-slate-700 mb-8 text-center max-w-2xl mx-auto leading-relaxed">
+                    This research relies heavily on advanced computational methods to predict and interpret how Cr behaves at the atomic level. These simulations provide insights that are often difficult or impossible to obtain through experiments alone.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="content-card bg-slate-50 p-6 rounded-lg shadow hover:shadow-sky-100">
+                        <h3 class="text-xl font-semibold text-sky-700 mb-2">DFT</h3>
+                        <p class="text-sm text-slate-600">Density Functional Theory calculates electronic structures and defect energetics from first principles, providing accurate ground-state properties.</p>
+                    </div>
+                    <div class="content-card bg-slate-50 p-6 rounded-lg shadow hover:shadow-sky-100">
+                        <h3 class="text-xl font-semibold text-sky-700 mb-2">MLFFs</h3>
+                        <p class="text-sm text-slate-600">Machine-Learned Force Fields are trained on DFT data to dramatically speed up simulations, allowing for larger systems and longer timescales with near-DFT accuracy.</p>
+                    </div>
+                    <div class="content-card bg-slate-50 p-6 rounded-lg shadow hover:shadow-sky-100">
+                        <h3 class="text-xl font-semibold text-sky-700 mb-2">MD</h3>
+                        <p class="text-sm text-slate-600">Molecular Dynamics simulations use these force fields to model atomic motion over time, revealing dynamic behavior like diffusion and thermal transport.</p>
+                    </div>
+                    <div class="content-card bg-slate-50 p-6 rounded-lg shadow hover:shadow-sky-100">
+                        <h3 class="text-xl font-semibold text-sky-700 mb-2">NEB</h3>
+                        <p class="text-sm text-slate-600">Nudged Elastic Band calculations map out minimum energy pathways for atomic migrations, determining activation barriers for diffusion processes.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="outlook" class="py-12 md:py-16">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="section-title text-3xl font-semibold text-slate-800 mb-8">Future Outlook & Design Platform</h2>
+                <p class="text-lg text-slate-700 mb-4 leading-relaxed">
+                    The insights gained from studying Cr intercalation in Sb₂Te₃ are more than just specific findings. They contribute to building a rational design platform for low-dimensional materials.
+                </p>
+                <p class="text-slate-600 leading-relaxed">
+                    This integrated computational workflow – combining DFT, MLFFs, MD, and NEB – can guide experimental synthesis, interface design, and device integration for a broad family of 2D and quasi-2D materials. The ultimate goal is to accelerate the discovery and optimization of materials with tailored properties for advanced electronic and optoelectronic devices.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-slate-800 text-slate-300 py-8 text-center">
+        <p>&copy; <span id="currentYear"></span> Interactive Science Summary. Based on research concepts.</p>
+        <p class="text-xs mt-1">Illustrative data used for charts. Not actual experimental results.</p>
+    </footer>
+
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuButton.addEventListener('click', () => {
+            const isHidden = mobileMenu.classList.contains('hidden');
+            mobileMenu.classList.toggle('hidden', !isHidden);
+            mobileMenuButton.querySelectorAll('svg').forEach(svg => svg.classList.toggle('hidden'));
+        });
+
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+                mobileMenuButton.querySelectorAll('svg').forEach(svg => {
+                    if (svg.innerHTML.includes('M4 6h16')) svg.classList.remove('hidden'); // Show burger
+                    else svg.classList.add('hidden'); // Hide close
+                });
+            });
+        });
+
+        // Chart.js - Mechanical Properties
+        const mechanicalCtx = document.getElementById('mechanicalPropertiesChart').getContext('2d');
+        new Chart(mechanicalCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Shear Modulus (GPa)', 'Interlayer Binding Energy (meV/Å²)'],
+                datasets: [{
+                    label: 'Pristine Sb₂Te₃ (Illustrative)',
+                    data: [20, 50], // Mock data
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)', // sky-500
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Cr-Intercalated Sb₂Te₃ (Illustrative)',
+                    data: [35, 85], // Mock data showing improvement
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)', // teal-500
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(200,200,200,0.2)'} }
+                },
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) { label += ': '; }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y;
+                                    if (context.label === 'Shear Modulus (GPa)') label += ' GPa';
+                                    else if (context.label === 'Interlayer Binding Energy (meV/Å²)') label += ' meV/Å²';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Chart.js - Thermoelectric Properties
+        const thermoelectricCtx = document.getElementById('thermoelectricPropertiesChart').getContext('2d');
+        new Chart(thermoelectricCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Seebeck (μV/K)', 'El. Cond. (S/cm)', 'κ_lattice (W/mK)', 'zT (dimensionless)'],
+                datasets: [{
+                    label: 'Pristine Sb₂Te₃ (Illustrative)',
+                    data: [150, 800, 1.2, 0.8], // Mock data
+                    backgroundColor: 'rgba(255, 159, 64, 0.6)', // orange-400
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Cr-Intercalated Sb₂Te₃ (Illustrative)',
+                    data: [170, 700, 0.7, 1.1], // Mock data showing changes (κ_L down, zT up)
+                    backgroundColor: 'rgba(153, 102, 255, 0.6)', // purple-500
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(200,200,200,0.2)'} }
+                },
+                plugins: {
+                    legend: { position: 'top' },
+                     tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) { label += ': '; }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y;
+                                     if (context.label === 'Seebeck (μV/K)') label += ' μV/K';
+                                     else if (context.label === 'El. Cond. (S/cm)') label += ' S/cm';
+                                     else if (context.label === 'κ_lattice (W/mK)') label += ' W/mK';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
